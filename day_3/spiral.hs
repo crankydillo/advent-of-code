@@ -36,20 +36,15 @@ ans square = abs (px - cx) + abs (py - cy)
 main = do putStrLn $ show $ numbersInSpiral !! 3
           putStrLn $ show $ ans 1024  -- this is wrong
           putStrLn $ show $ ans 277678 -- but this is right???
-          putStrLn $ show $ lookup (2,2) myMap
-          --putStrLn $ show $ myMap
           putStrLn $ show $ spiralCoords 3
           putStrLn "--------"
           putStrLn $ show $ spiralCoords 9 
           putStrLn "--------"
           putStrLn $ show $ spiralCoords 5
           putStrLn "--------"
-          putStrLn $ show $ head $ dropWhile (<= 277678) $ sort (map snd (spiralVals 33))
-          putStrLn "--------"
           putStrLn $ show $ spiralVals 5
-
-
-myMap = map (\x -> (x, 1)) (spiralCoords 5)
+          putStrLn "--------"
+          putStrLn $ show $ head $ dropWhile (<= 277678) $ sort (map snd (spiralVals 33)) -- prob 2 answer
 
 spiralVals s = let first = ((centerPoint s), 1)
                in first : (spiralValsH  (tail $ spiralCoords s) [first])
@@ -71,11 +66,15 @@ adjacents (x, y) = [(x-1, y), (x, y-1), (x-1, y-1), (x+1, y), (x, y+1), (x+1, y+
 -- Should redo the first question on top of this
 spiralCoords s = centerPoint s : reverse (spiralCoordsH s s 1)
 
+{-
+ - We'll spiral backwards from endpoint.  The list concatenations work like so:
+ - bottom (left->right) ++ left (bottom->top) ++ top (left->right) ++ right (top->bottom-1)
+ - Then we recursively generate the next spiral down
+ -}
 spiralCoordsH :: (Integral i) => i -> i -> i -> [(i, i)]
 spiralCoordsH 1 _ _ = []
-spiralCoordsH s origS ctr = [(origS-ctr,y) | y <- reverse [ctr-1..origS-ctr]] ++
-                             [(x-1,  ctr-1) | x <- reverse [ctr..origS-ctr]] ++
-                             [(ctr-1, y) | y <- [ctr..(origS - (ctr + 1))]] ++
-                             --[(x,  s-1) | x <- [ctr-1..(s `div` 2)]] ++
-                             [(x,  origS - ctr) | x <- [ctr-1..(origS - (ctr + 1))]] ++
+spiralCoordsH s origS ctr = [ (origS-ctr, y           ) | y <- reverse [ctr-1..origS-ctr]] ++
+                             [(x-1      , ctr-1       ) | x <- reverse [ctr..origS-ctr]] ++
+                             [(ctr-1    , y           ) | y <- [ctr..(origS - (ctr + 1))]] ++
+                             [(x        ,  origS - ctr) | x <- [ctr-1..(origS - (ctr + 1))]] ++
                              spiralCoordsH (s - 2) origS (ctr + 1)
