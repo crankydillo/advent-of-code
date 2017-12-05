@@ -1,47 +1,121 @@
-def hasNoDupes(words: Seq[String]) = words.toSet.size == words.size
+// putting into object so I can use sbt (nodemon + scala generates too many jvm
+// error logs).
+import com.codahale.metrics.ConsoleReporter
 
-val numValidPart1 = input.split("\n").foldLeft (0) { (memo, line) =>
-  if (hasNoDupes(line.split("""\s+"""))) memo + 1
-	else memo
-}
+object app extends nl.grons.metrics.scala.DefaultInstrumented {
 
-println(numValidPart1)
+  private val part1Timer = metrics.timer("part1")
+  private val part2aTimer = metrics.timer("part2a")
+  private val part2bTimer = metrics.timer("part2b")
 
-// Not efficient:(  Also, could be combos[T]
-def anagrams(word: String): List[String] = {
+  val reporter = ConsoleReporter.forRegistry(metricRegistry)
+    .convertDurationsTo(java.util.concurrent.TimeUnit.SECONDS)
+    .build()
 
-  def anagramsH(
-    chars: List[Char],
-    ctr: Int,
-    memo: List[List[Char]]
-  ): List[List[Char]] = {
-    if (ctr == word.length) {
-      memo
-    } else {
-      chars match {
-        case Nil             => memo
-        case c1 :: c2 :: Nil => memo ++ List(List(c1, c2), List(c2, c1))
-        case c :: cs         => 
-          val currLetterAnagrams = anagramsH(cs, 0, Nil).map { t => c +: t }
-          anagramsH(cs :+ c, ctr+1, memo ++ currLetterAnagrams)
+  def main(args: Array[String]): Unit = {
+
+    val numValidPart1 = part1Timer.time {
+      input.split("\n").foldLeft (0) { (memo, line) =>
+        if (hasNoDupes(line.split("""\s+"""))) memo + 1
+        else memo
       }
     }
+
+    println(numValidPart1)
+
+    val numValidPart2 = part2aTimer.time {
+      input.split("\n").foldLeft (0) { (memo, line) =>
+        val words = line.split("""\s+""")
+        val wordAnagrams = words.map(anagrams)
+        val anagramSet = wordAnagrams.map(_.toSet).flatten.toSet
+        if (wordAnagrams.flatten.size == anagramSet.size) memo + 1
+        else memo
+      }
+    }
+ 
+    // Grab coffee...
+    println(numValidPart2)
+
+    // Still using the inefficient algorithm (just less often).  We do some
+    // easy algorithm improvements + using parallel computation to get a 4X
+    // improvement in speed.
+    val fasterPart2 = part2bTimer.time {
+      input.split("\n")
+        .map    { lineWords }
+        .filter { hasNoDupes }
+        .par
+        .map { words =>
+          if (!hasSameSizeWords(words)) {
+            1
+          } else {
+            val wordAnagrams = words.par.map(anagrams)
+            val anagramSet = wordAnagrams.par.map(_.toSet).flatten.toSet
+            if (wordAnagrams.flatten.size == anagramSet.size) 1 else 0
+          }
+        }.sum
+    }
+
+    println(fasterPart2)
+
+    reporter.report()
+
   }
 
-  anagramsH(word.toList, 0, Nil).map { _.mkString("") }.distinct
-}
+  def lineWords(line: String) = line.split("""\s+""").toList
 
-val numValidPart2 = input.split("\n").foldLeft (0) { (memo, line) =>
-  val words = line.split("""\s+""")
-  val wordAnagrams = words.map(anagrams)
-  val anagramSet = wordAnagrams.map(_.toSet).flatten.toSet
-  if (wordAnagrams.flatten.size == anagramSet.size) memo + 1
-  else memo
-}
+  def hasSameSizeWords(words: Seq[String]) =
+    words.map { _.size }.distinct.size != words.size
 
-println(numValidPart2)
+  def hasNoDupes(words: Seq[String]) = words.toSet.size == words.size
 
-def input = """
+    // Not efficient:(  Also, could be combos[T]
+  def anagrams(word: String): List[String] = {
+
+    def anagramsH(
+      chars: List[Char],
+      ctr: Int,
+      memo: List[List[Char]]
+    ): List[List[Char]] = {
+      if (ctr == word.length) {
+        memo
+      } else {
+        chars match {
+          case Nil             => memo
+          case c1 :: c2 :: Nil => memo ++ List(List(c1, c2), List(c2, c1))
+          case c :: cs         => 
+            val currLetterAnagrams = anagramsH(cs, 0, Nil).map { t => c +: t }
+            anagramsH(cs :+ c, ctr+1, memo ++ currLetterAnagrams)
+        }
+      }
+    }
+
+    anagramsH(word.toList, 0, Nil).map { _.mkString("") }.distinct
+  }
+
+  def fasterAnagrams(word: String): List[String] = {
+
+    def fAnagramsH(
+      chars: List[Char],
+      ctr: Int,
+      memo: List[List[Char]]
+    ): List[List[Char]] = {
+      if (ctr == word.length) {
+        memo
+      } else {
+        chars match {
+          case Nil             => memo
+          case c1 :: c2 :: Nil => memo ++ List(List(c1, c2), List(c2, c1))
+          case c :: cs         => 
+            val currLetterAnagrams = fAnagramsH(cs, 0, Nil).par.map { t => c +: t }
+            fAnagramsH(cs :+ c, ctr+1, memo ++ currLetterAnagrams)
+        }
+      }
+    }
+
+    fAnagramsH(word.toList, 0, Nil).map { _.mkString("") }.distinct
+  }
+
+  def input = """
 sayndz zfxlkl attjtww cti sokkmty brx fhh suelqbp
 xmuf znkhaes pggrlp zia znkhaes znkhaes
 nti rxr bogebb zdwrin
@@ -554,5 +628,4 @@ xzzpiy cjwss jwscs apb bpa
 ydjhhf yeltadb lwi cjdcb ovaox xrdm vkxub
 zax xza admbc lvpzfeh auxn rwasj
 kebx eild nrskdr meja jxczomh gcne""".trim()
-
-
+}
