@@ -22,11 +22,7 @@ fn main() {
             let new_amt = change_fn(curr_amt);
             v[curr_pos as usize] = new_amt;
             curr_pos = curr_pos + curr_amt;
-            if curr_pos < 0 || curr_pos >= v.len() as i32 {
-                true
-            } else {
-                false
-            }
+            curr_pos < 0 || curr_pos >= v.len() as i32
         };
 
         let mut stop = false;
