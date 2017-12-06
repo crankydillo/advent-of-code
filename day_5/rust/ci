@@ -1,0 +1,2 @@
+#!/bin/sh
+watchexec --restart -e rs cargo run

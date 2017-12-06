@@ -2,6 +2,11 @@
 // error logs).
 import com.codahale.metrics.ConsoleReporter
 
+// This solution is SOO dumb.  Can't believe I didn't just use an isAnagram
+// method, which is what I saw someone else do.  Basically, it's as easy as
+// comparing words by converting the words to maps of characters to occurrence
+// count and then comparing the maps.  At least I'm pretty sure that will work.
+// May try it later!
 object app extends nl.grons.metrics.scala.DefaultInstrumented {
 
   private val part1Timer = metrics.timer("part1")
