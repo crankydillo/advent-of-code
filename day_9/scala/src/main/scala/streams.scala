@@ -40,8 +40,7 @@ object streams {
       P( canceled | AnyChar.!.map(c => Some(c.head)))
 
     val garbage =
-      //P( "<" ~ (!">" ~ (canceled | AnyChar)).rep ~ ">").map(s => Garbage(Nil))
-      P( "<" ~ (!">" ~ garbageChar).rep ~ ">").map { s =>
+      P( "<" ~ (!">" ~ garbageChar).rep ~ ">").map{ s =>
         Garbage(s.toList.flatten) 
       }
 
