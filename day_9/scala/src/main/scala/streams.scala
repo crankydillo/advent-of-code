@@ -5,6 +5,15 @@ import scala.util.{Try, Success, Failure}
 
 import fastparse.all._
 
+// I realize this is more complicated than it needs for the simple problem;
+// however, I have been bitten sooo many times by text parsing where I didn't
+// understand the initial rules and/or adding rules made expanding the parsing
+// super difficult that I instantly start thinking of solving these problems
+// with context-free grammars.  With Scala, we get to do CFGs with parser
+// combinators.  I also think this makes it super easy to see that you are
+// doing things correctly.
+//
+// Plus, I wanted to highlight Scala and parser combinators:P
 object streams {
 
   def main(args: Array[String]): Unit = {
