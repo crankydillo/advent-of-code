@@ -13,15 +13,19 @@ import fastparse.all._
 // combinators.  I also think this makes it super easy to see that you are
 // doing things correctly.
 //
-// Plus, I wanted to highlight Scala and parser combinators:P
+// Plus, I wanted to tryout this fastparse lib.  I had only used Scala's
+// built-in support before this.
 object streams {
 
   def main(args: Array[String]): Unit = {
     // input is on first line
     val f = new File("../input")
     val input = Source.fromFile(f).getLines.mkString("").trim
-    println(score(input))
-    println(garbageCount(input))
+
+    doIfParse(input) { thing =>
+      println(score(thing))
+      println(thing.garbageCount)
+    }
   }
 
   sealed trait Thing {
@@ -74,10 +78,10 @@ object streams {
     }
   }
 
-  def score(thingStr: String): Try[Int] = {
-    // TODO look into if Parsed is a monad..
-    // If that doesn't pan out, don't eat fastparse messages!
-   
+  def score(thingStr: String): Try[Int] = doIfParse(thingStr) { score }
+
+  def score(thing: Thing): Int = {
+
     def scoreH(thing: Thing, containerScore: Int): Int = {
       thing match {
         case Garbage(_)      => 0
@@ -86,7 +90,7 @@ object streams {
       }
     }
 
-    doIfParse(thingStr) { t => scoreH(t, 1) }
+    scoreH(thing, 1) 
   }
 
   def garbageCount(thingStr: String): Try[Int] = {
@@ -94,6 +98,8 @@ object streams {
   }
 
   private def doIfParse[T](thingStr: String)(fn: Thing => T): Try[T] = {
+    // TODO look into if Parsed is a monad..
+    // If that doesn't pan out, don't eat fastparse messages!
     parse(thingStr) match {
       case Parsed.Success(t, _) => Success(fn(t))
       case _ => Failure(new Exception(s"Failed to parse"))
