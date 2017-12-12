@@ -3,6 +3,9 @@ import java.io.File
 import scala.io.Source
 
 // As normal, I'm not validating input
+// 
+// With my Scala solutions, I've been using models for almost everything.  For
+// this, I will just represent the problem with a dynamic structure (a Map).
 object pipes {
 
   def main(args: Array[String]): Unit = {
