@@ -30,21 +30,9 @@ object generator {
     val mask = 0x00000000ffff
     genPairs(genA, genB).take(iterations)
       .foldLeft (0L) { case (matches, (aVal, bVal)) =>
-        //println((aVal & mask).toBinaryString + "-" + (bVal & mask).toBinaryString)
         if ((aVal & mask) == (bVal & mask)) matches + 1L else matches
       }
   }
-
-  /* This stream approach is cool and all, but it's going to create a large
-   in memory data structure..
-  def contest(genA: GenLong, genB: GenLong): Stream[Int] = {
-    val mask = 0x00000000ffff
-    genPairs(genA, genB).map { case (aVal, bVal) =>
-      //println((aVal & mask).toBinaryString + "-" + (bVal & mask).toBinaryString)
-      if ((aVal & mask) == (bVal & mask)) 1 else 0
-    }
-  }
-  */
 
  trait GenLong {
    def gen(): Long
