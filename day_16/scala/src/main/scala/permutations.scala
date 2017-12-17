@@ -35,6 +35,13 @@ object permutations {
     // eliminate all dances between (or something like that)
   }
 
+  def dance5(): Unit = {
+    // see where the positions of the end dance are relative to the start.
+    // Then make those changes 1 billion times.  My goodness, how could I miss
+    // that!  Will come back to this!
+  }
+
+
   def dance4(): Unit = {
     // Can we add moves together??
   }
